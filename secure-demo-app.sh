@@ -36,21 +36,19 @@ json_pw_string=$(jq -n \
 --arg pw "$VAULT_PW" \
 '{"password": $pw}')
 
-token=$(curl \
+token=$(curl -s \
     -X POST \
-    -H "X-Vault-Namespace: admin" \
     -d "$json_pw_string" \
-    https://vault-public-vault-776466ca.915a5767.z1.hashicorp.cloud:8200/v1/auth/userpass/login/demoapp \
+    http://vault.container.shipyard.run:8200/v1/auth/userpass/login/demoapp \
     | jq -r .auth.client_token)
 
 
 # generate database credentials
 
-db_creds=$(curl \
+db_creds=$(curl -s \
   -X GET \
-  -H "X-Vault-Namespace: admin" \
   -H "X-Vault-Token: ${token}" \
-  https://vault-public-vault-776466ca.915a5767.z1.hashicorp.cloud:8200/v1/database/creds/demoapp)
+  http://vault.container.shipyard.run:8200/v1/database/creds/profiles)
 
 db_user=$(echo $db_creds | jq -r .data.username)
 db_password=$(echo $db_creds | jq -r .data.password)
@@ -64,12 +62,11 @@ email_json_string=$(jq -n \
 --arg epl "$emailpayload" \
 '{"plaintext": $epl}')
 
-encryptedemail=$(curl \
+encryptedemail=$(curl -s \
     -H "X-Vault-Token: ${token}" \
-    -H "X-Vault-Namespace: admin" \
     -X POST \
     -d "${email_json_string}" \
-    https://vault-public-vault-776466ca.915a5767.z1.hashicorp.cloud:8200/v1/transit/encrypt/demoapp | jq -r .data.ciphertext)
+    http://vault.container.shipyard.run:8200/v1/transit/encrypt/demoapp | jq -r .data.ciphertext)
 
 
 # Encrypt password data
@@ -80,27 +77,27 @@ pw_json_string=$(jq -n \
 --arg pwpl "${pwpayload}" \
 '{"plaintext": $pwpl}')
 
-encryptedpw=$(curl \
+encryptedpw=$(curl -s \
     -H "X-Vault-Token: ${token}" \
-    -H "X-Vault-Namespace: admin" \
     -X POST \
     -d "${pw_json_string}" \
-    https://vault-public-vault-776466ca.915a5767.z1.hashicorp.cloud:8200/v1/transit/encrypt/demoapp | jq -r .data.ciphertext)
+    http://vault.container.shipyard.run:8200/v1/transit/encrypt/demoapp | jq -r .data.ciphertext)
 
 
 # Upsert database table
-psql "host=${postgres_addr} port=${postgres_port} dbname=${postgres_db_name} user=${db_user}@security-field-day-psql password=${db_password} sslmode=disable" \
+psql "host=${postgres_addr} port=${postgres_port} dbname=${postgres_db_name} user=${db_user} password=${db_password} sslmode=disable" \
   -c 'CREATE TABLE IF NOT EXISTS profiles (
-        username VARCHAR (50) PRIMARY KEY,
-        first_name VARCHAR (50) NOT NULL,
-        surname VARCHAR (50) NOT NULL,
+        id SERIAL PRIMARY KEY,
+        username VARCHAR (255) NOT NULL UNIQUE,
+        first_name VARCHAR (255) NOT NULL,
+        surname VARCHAR (255) NOT NULL,
         email VARCHAR (255) UNIQUE NOT NULL,
         password VARCHAR (255) NOT NULL
 );'
 
 
 #Add new user to Database
-psql "host=${postgres_addr} port=${postgres_port} dbname=${postgres_db_name} user=${db_user}@security-field-day-psql password=${db_password} sslmode=disable" \
+psql "host=${postgres_addr} port=${postgres_port} dbname=${postgres_db_name} user=${db_user} password=${db_password} sslmode=disable" \
   -c "INSERT INTO profiles(
         username,
         first_name,

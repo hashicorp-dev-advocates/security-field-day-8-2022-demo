@@ -3,7 +3,7 @@
 # This demo app takes inputs and write them to a database
 # The goal is to create a user profile
 
-postgres_user="psqladmin"
+postgres_user="postgres"
 postgres_password=$POSTGRES_PASSWORD
 postgres_addr=$POSTGRES_ADDR
 postgres_port="5432"
@@ -33,9 +33,10 @@ read PASSWORD
 echo Creating your user profile...
 
 # Upsert database table
-psql "host=${postgres_addr} port=${postgres_port} dbname=${postgres_db_name} user=${postgres_user}@security-field-day-psql password=${postgres_password} sslmode=disable" \
+psql "host=${postgres_addr} port=${postgres_port} dbname=${postgres_db_name} user=${postgres_user} password=${postgres_password} sslmode=disable" \
   -c 'CREATE TABLE IF NOT EXISTS profiles (
-        username VARCHAR (50) PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
+        username VARCHAR (50) NOT NULL,
         first_name VARCHAR (50) NOT NULL,
         surname VARCHAR (50) NOT NULL,
         email VARCHAR (255) UNIQUE NOT NULL,
@@ -44,7 +45,7 @@ psql "host=${postgres_addr} port=${postgres_port} dbname=${postgres_db_name} use
 
 
 #Add new user to Database
-psql "host=${postgres_addr} port=${postgres_port} dbname=${postgres_db_name} user=${postgres_user}@security-field-day-psql password=${postgres_password} sslmode=disable" \
+psql "host=${postgres_addr} port=${postgres_port} dbname=${postgres_db_name} user=${postgres_user} password=${postgres_password} sslmode=disable" \
   -c "INSERT INTO profiles(
         username,
         first_name,
