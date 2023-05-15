@@ -14,7 +14,10 @@ vault write database/config/profiles \
 vault write database/roles/profiles \
     db_name="profiles" \
     creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
-        GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO \"{{name}}\";" \
+        GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO \"{{name}}\"; \
+        GRANT SELECT ON ALL TABLES IN SCHEMA public TO \"{{name}}\"; \
+        GRANT INSERT ON ALL TABLES IN SCHEMA public TO \"{{name}}\"; \
+        GRANT USAGE, SELECT ON SEQUENCE profiles_id_seq TO \"{{name}}\";" \
     default_ttl="1h" \
     max_ttl="24h"
 

@@ -36,11 +36,11 @@ echo Creating your user profile...
 psql "host=${postgres_addr} port=${postgres_port} dbname=${postgres_db_name} user=${postgres_user} password=${postgres_password} sslmode=disable" \
   -c 'CREATE TABLE IF NOT EXISTS profiles (
         id SERIAL PRIMARY KEY,
-        username VARCHAR (50) NOT NULL,
-        first_name VARCHAR (50) NOT NULL,
-        surname VARCHAR (50) NOT NULL,
+        username VARCHAR (255) NOT NULL,
+        first_name VARCHAR (255) NOT NULL,
+        surname VARCHAR (255) NOT NULL,
         email VARCHAR (255) UNIQUE NOT NULL,
-        password VARCHAR (50) NOT NULL
+        password VARCHAR (255) NOT NULL
 );'
 
 
